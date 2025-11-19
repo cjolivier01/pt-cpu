@@ -119,7 +119,9 @@ class DeviceOpTrace(TorchDispatchMode):
 
         return True
 
-    def _uses_tracked_device(self, args: Any, kwargs: dict[str, Any] | None, result: Any) -> bool:
+    def _uses_tracked_device(
+        self, args: Any, kwargs: dict[str, Any] | None, result: Any
+    ) -> bool:
         if kwargs is None:
             kwargs = {}
 
