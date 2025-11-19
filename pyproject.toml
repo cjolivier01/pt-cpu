@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pt-cpu"
+version = "0.1.0"
+description = "Context manager that prints a stack trace whenever a PyTorch op touches a given device (e.g. CPU)."
+requires-python = ">=3.9"
+dependencies = [
+    "torch>=2.0",
+]
+
+[project.urls]
+Homepage = "https://example.com/pt-cpu"
+
