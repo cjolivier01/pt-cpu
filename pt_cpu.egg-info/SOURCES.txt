@@ -1,9 +1,0 @@
-README.md
-pyproject.toml
-pt_cpu/__init__.py
-pt_cpu/device_trace.py
-pt_cpu.egg-info/PKG-INFO
-pt_cpu.egg-info/SOURCES.txt
-pt_cpu.egg-info/dependency_links.txt
-pt_cpu.egg-info/requires.txt
-pt_cpu.egg-info/top_level.txt

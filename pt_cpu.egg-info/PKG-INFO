@@ -1,7 +1,0 @@
-Metadata-Version: 2.4
-Name: pt-cpu
-Version: 0.1.0
-Summary: Context manager that prints a stack trace whenever a PyTorch op touches a given device (e.g. CPU).
-Project-URL: Homepage, https://example.com/pt-cpu
-Requires-Python: >=3.9
-Requires-Dist: torch>=2.0
