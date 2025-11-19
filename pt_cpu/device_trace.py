@@ -117,7 +117,9 @@ class DeviceOpTrace(TorchDispatchMode):
 
         return True
 
-    def _uses_tracked_device(self, args: Any, kwargs: dict[str, Any] | None, result: Any) -> bool:
+    def _uses_tracked_device(
+        self, args: Any, kwargs: dict[str, Any] | None, result: Any
+    ) -> bool:
         if kwargs is None:
             kwargs = {}
 
@@ -145,7 +147,9 @@ class DeviceOpTrace(TorchDispatchMode):
 
         result = func(*args, **kwargs)
 
-        if self._uses_tracked_device(args, kwargs, result) and self._should_log_op(func):
+        if self._uses_tracked_device(args, kwargs, result) and self._should_log_op(
+            func
+        ):
             if not self.print_once or not self._has_printed:
                 self._has_printed = True
                 print(f"[DeviceOpTrace] PyTorch op on {self.device}: {func}")
