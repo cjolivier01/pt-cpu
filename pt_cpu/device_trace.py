@@ -1,3 +1,4 @@
+import sys
 import traceback
 from typing import Any, Iterable
 
@@ -59,6 +60,7 @@ class DeviceOpTrace(TorchDispatchMode):
         self.include_ops = set(include_ops) if include_ops is not None else None
         self.exclude_ops = set(exclude_ops) if exclude_ops is not None else None
         self._has_printed = False
+        self.printed_lines = set()
 
     def __enter__(self):
         if not self.enabled:
@@ -121,23 +123,26 @@ class DeviceOpTrace(TorchDispatchMode):
         if kwargs is None:
             kwargs = {}
 
-        for t in _iter_tensors(args):
-            if t.device == self.device:
-                return True
-
-        for t in _iter_tensors(kwargs):
-            if t.device == self.device:
-                return True
+        if all(t.device == self.device for t in _iter_tensors(kwargs)):
+            return True
 
         device_kw = kwargs.get("device")
         if device_kw is not None and torch.device(device_kw) == self.device:
             return True
 
-        for t in _iter_tensors(result):
-            if t.device == self.device:
-                return True
-
         return False
+
+    def print_stack_without_last(self):
+        # Extract the stack frames
+        stack = traceback.extract_stack()
+
+        # Remove the last frame (which corresponds to the call to print_stack_without_last itself)
+        if stack:
+            stack = stack[:-2]
+
+        # Format and print the modified stack
+        formatted_stack = "".join(traceback.format_list(stack))
+        sys.stderr.write(formatted_stack)
 
     def __torch_dispatch__(self, func, types, args=(), kwargs=None):
         if kwargs is None:
@@ -146,9 +151,19 @@ class DeviceOpTrace(TorchDispatchMode):
         result = func(*args, **kwargs)
 
         if self._uses_tracked_device(args, kwargs, result) and self._should_log_op(func):
-            if not self.print_once or not self._has_printed:
-                self._has_printed = True
-                print(f"[DeviceOpTrace] PyTorch op on {self.device}: {func}")
-                traceback.print_stack()
+            stack = traceback.extract_stack()
+            if len(stack) >= 2:
+                # Remove the last two frames (which correspond to the call to __torch_dispatch__ itself)
+                stack_line = stack[-2]
+                stack_line_str = str(stack_line)
+                if not stack_line_str in self.printed_lines:
+                    self.printed_lines.add(stack_line_str)
+                    if not self.print_once or not self._has_printed:
+                        self._has_printed = True
+                        print("===================================================")
+                        print(f"[DeviceOpTrace] PyTorch op on {self.device}: {func}")
+                        print("---------------------------------------------------")
+                        self.print_stack_without_last()
+                        print("===================================================")
 
         return result
