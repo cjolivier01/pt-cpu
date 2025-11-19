@@ -21,8 +21,9 @@ class DeviceOpTrace(TorchDispatchMode):
     A context that prints a Python stack trace whenever a PyTorch op
     is dispatched on a particular device (default: ``"cpu"``).
 
-    You can optionally filter which ops are logged.  Op names can be
-    specified in several forms, all of which are matched:
+    You can optionally filter which ops are logged, and toggle the
+    tracer on or off with a flag.  Op names can be specified in several
+    forms, all of which are matched:
 
     - Full overload name: ``\"aten.randn.default\"`` (``str(func)``).
     - Qualified name: ``\"aten::randn\"``.
@@ -47,15 +48,29 @@ class DeviceOpTrace(TorchDispatchMode):
         self,
         device: torch.device | str = "cpu",
         print_once: bool = False,
+        enabled: bool = True,
         include_ops: Iterable[str] | None = None,
         exclude_ops: Iterable[str] | None = None,
     ) -> None:
         super().__init__()
         self.device = torch.device(device)
         self.print_once = print_once
+        self.enabled = enabled
         self.include_ops = set(include_ops) if include_ops is not None else None
         self.exclude_ops = set(exclude_ops) if exclude_ops is not None else None
         self._has_printed = False
+
+    def __enter__(self):
+        if not self.enabled:
+            # Do not activate TorchDispatchMode at all.
+            return self
+        return super().__enter__()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if not self.enabled:
+            # We never entered the underlying mode stack.
+            return False
+        return super().__exit__(exc_type, exc_val, exc_tb)
 
     @staticmethod
     def _op_name_variants(func: Any) -> set[str]:

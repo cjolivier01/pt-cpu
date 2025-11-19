@@ -78,6 +78,16 @@ with DeviceOpTrace("cpu", print_once=True):
     y = x + 1               # NOT traced (already printed once)
 ```
 
+## Temporarily disable the tracer
+
+You can keep `DeviceOpTrace` in the code but turn it off via the `enabled` flag:
+
+```python
+with DeviceOpTrace("cpu", enabled=False):
+    # No tracing will occur; the mode is not installed.
+    x = torch.randn(2, 2)
+```
+
 ## Example script
 
 The repository includes a small script in `example.py` that demonstrates basic usage:
@@ -87,4 +97,3 @@ python example.py
 ```
 
 This will run a short CPU computation inside `DeviceOpTrace("cpu")` and print the corresponding stack traces. 
-
